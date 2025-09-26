@@ -1,3 +1,13 @@
+# Environment Variables
+
+Create a `.env` file in the root of your project and add:
+
+```
+EXPO_PUBLIC_SUPABASE_URL=your-supabase-url
+EXPO_PUBLIC_SUPABASE_ANON_KEY=your-supabase-anon-key
+```
+
+Replace with your actual Supabase project credentials.
 # Minimal Template
 
 This is a [React Native](https://reactnative.dev/) project built with [Expo](https://expo.dev/) and [React Native Reusables](https://reactnativereusables.com).
