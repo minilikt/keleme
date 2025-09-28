@@ -20,6 +20,7 @@ export default function SignUp() {
   const passwordInputRef = React.useRef<TextInput>(null);
   const [email, setEmail] = React.useState('');
   const [password, setPassword] = React.useState('');
+  const [username, setUsername] = React.useState('');
   const [loading, setLoading] = React.useState(false);
   const [error, setError] = React.useState<string | null>(null);
   const [showVerify, setShowVerify] = React.useState(false);
@@ -33,7 +34,13 @@ export default function SignUp() {
     setLoading(true);
     setError(null);
     setShowVerify(false);
-    const { error } = await supabase.auth.signUp({ email, password });
+    const { error } = await supabase.auth.signUp({
+      email,
+      password,
+      options: {
+        data: { username },
+      },
+    });
     setLoading(false);
     if (error) {
       setError(error.message);
@@ -57,6 +64,18 @@ export default function SignUp() {
         </CardHeader>
         <CardContent className="gap-6">
           <View className="gap-6">
+            <View className="gap-1.5">
+              <Label htmlFor="username">Username</Label>
+              <Input
+                id="username"
+                placeholder="your username"
+                autoCapitalize="none"
+                value={username}
+                onChangeText={setUsername}
+                returnKeyType="next"
+                submitBehavior="submit"
+              />
+            </View>
             <View className="gap-1.5">
               <Label htmlFor="email">Email</Label>
               <Input
