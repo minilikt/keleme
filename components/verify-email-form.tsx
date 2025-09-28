@@ -19,7 +19,7 @@ const TABULAR_NUMBERS_STYLE: TextStyle = { fontVariant: ['tabular-nums'] };
 
 import { supabase } from '@/lib/supabase';
 
-export function VerifyEmailForm({ email }: { email: string }) {
+export function VerifyEmailForm({ email, onSuccess }: { email: string, onSuccess: () => void }) {
   const { countdown, restartCountdown } = useCountdown(RESEND_CODE_INTERVAL_SECONDS);
   const [otp, setOtp] = React.useState('');
   const [loading, setLoading] = React.useState(false);

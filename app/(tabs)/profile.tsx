@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { View, Text, ScrollView, TouchableOpacity, Image, Switch, Alert } from 'react-native';
+import { View, Text, ScrollView, TouchableOpacity, Image, Switch, Alert, Pressable } from 'react-native';
+import { supabase } from '@/lib/supabase';
 import { useColorScheme } from 'nativewind';
 import { 
   User, 
@@ -18,6 +19,7 @@ import {
   Mail,
   Smartphone
 } from 'lucide-react-native';
+import { AppModal } from '@/components/ui/modal';
 
 const ProfileScreen = () => {
   const [notificationsEnabled, setNotificationsEnabled] = useState(true);
@@ -25,15 +27,30 @@ const ProfileScreen = () => {
   const [wifiOnly, setWifiOnly] = useState(false);
   const { colorScheme, toggleColorScheme } = useColorScheme();
   const isDarkMode = colorScheme === 'dark';
+  const [isLogoutModalVisible, setLogoutModalVisible] = React.useState(false);
 
-  const user = {
-    name: "Alex Morgan",
-    email: "alex.morgan@example.com",
-    avatar: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=900&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8M3x8dXNlcnxlbnwwfHwwfHx8MA%3D%3D",
-    joinDate: "January 2023",
-    streak: 15,
-    achievements: 8
-  };
+  const [user, setUser] = useState<any>(null);
+  React.useEffect(() => {
+    async function fetchUser() {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return setUser(null);
+      // Fetch onboarding info if you store it in a table, e.g. 'profiles'
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('id', user.id)
+        .single();
+      setUser({
+        name: profile?.username || user.user_metadata?.username || user.email,
+        email: user.email,
+        avatar: profile?.avatar_url || user.user_metadata?.avatar_url || 'https://ui-avatars.com/api/?name=' + (profile?.username || user.email),
+        joinDate: new Date(user.created_at).toLocaleDateString(),
+        streak: profile?.streak || 0,
+        achievements: profile?.achievements || 0
+      });
+    }
+    fetchUser();
+  }, []);
 
   const settingsSections = [
     {
@@ -63,17 +80,19 @@ const ProfileScreen = () => {
       ]
     }
   ];
+const confirmLogout = async () => {
+  setLogoutModalVisible(false);
+
+  await supabase.auth.signOut();
+
+  const router = require('expo-router').useRouter();
+  router.replace('/(auth)/sign-in');
+};
 
   const handleLogout = () => {
-    Alert.alert(
-      "Logout",
-      "Are you sure you want to logout?",
-      [
-        { text: "Cancel", style: "cancel" },
-        { text: "Logout", style: "destructive" }
-      ]
-    );
-  };
+  setLogoutModalVisible(true); // show modal instead of alert
+};
+
 
   return (
     <View className={`flex-1 ${isDarkMode ? 'bg-[#18181b]' : 'bg-[#F0F4F8]'}`}>
@@ -82,19 +101,19 @@ const ProfileScreen = () => {
         <View className="items-center">
           <View className={`w-24 h-24 rounded-full ${isDarkMode ? 'bg-white/10' : 'bg-white/20'} items-center justify-center mb-4`}>
             <Image 
-              source={{ uri: user.avatar }} 
+              source={{ uri: user?.avatar }} 
               className="w-20 h-20 rounded-full"
             />
           </View>
-          <Text className={`text-2xl font-bold ${isDarkMode ? 'text-white' : 'text-white'}`}>{user.name}</Text>
-          <Text className={`${isDarkMode ? 'text-gray-400' : 'text-white/80'} mt-1`}>Member since {user.joinDate}</Text>
+          <Text className={`text-2xl font-bold ${isDarkMode ? 'text-white' : 'text-white'}`}>{user?.name || '...'}</Text>
+          <Text className={`${isDarkMode ? 'text-gray-400' : 'text-white/80'} mt-1`}>Member since {user?.joinDate || '...'}</Text>
           <View className="flex-row justify-center mt-4">
             <View className={`p-3 rounded-xl items-center mx-2 ${isDarkMode ? 'bg-white/10' : 'bg-white/20'}`}> 
-              <Text className={`text-lg font-bold ${isDarkMode ? 'text-gray-200' : 'text-white'}`}>{user.streak}</Text>
+              <Text className={`text-lg font-bold ${isDarkMode ? 'text-gray-200' : 'text-white'}`}>{user?.streak ?? 0}</Text>
               <Text className={`${isDarkMode ? 'text-gray-400' : 'text-white'} text-sm`}>Day Streak</Text>
             </View>
             <View className={`p-3 rounded-xl items-center mx-2 ${isDarkMode ? 'bg-white/10' : 'bg-white/20'}`}> 
-              <Text className={`text-lg font-bold ${isDarkMode ? 'text-gray-200' : 'text-white'}`}>{user.achievements}</Text>
+              <Text className={`text-lg font-bold ${isDarkMode ? 'text-gray-200' : 'text-white'}`}>{user?.achievements ?? 0}</Text>
               <Text className={`${isDarkMode ? 'text-gray-400' : 'text-white'} text-sm`}>Achievements</Text>
             </View>
           </View>
@@ -159,6 +178,28 @@ const ProfileScreen = () => {
           <Text className={`text-xs mt-1 ${isDarkMode ? 'text-gray-400' : 'text-[#607D8B]'}`}>© 2023 StudyFlow Inc. All rights reserved.</Text>
         </View>
       </ScrollView>
+      <AppModal visible={isLogoutModalVisible} onClose={() => setLogoutModalVisible(false)}>
+  <View>
+    <Text style={{ fontSize: 18, fontWeight: '600', marginBottom: 10 }}>
+      Logout
+    </Text>
+    <Text style={{ marginBottom: 20 }}>
+      Are you sure you want to logout?
+    </Text>
+    <View style={{ flexDirection: 'row', justifyContent: 'flex-end' }}>
+      <Pressable
+        onPress={() => setLogoutModalVisible(false)}
+        style={{ marginRight: 15 }}
+      >
+        <Text style={{ color: 'blue' }}>Cancel</Text>
+      </Pressable>
+      <Pressable onPress={confirmLogout}>
+        <Text style={{ color: 'red', fontWeight: 'bold' }}>Logout</Text>
+      </Pressable>
+    </View>
+  </View>
+</AppModal>
+
     </View>
   );
 };

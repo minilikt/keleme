@@ -43,8 +43,6 @@ export default function TabsLayout() {
             iconName = focused ? 'home' : 'home-outline';
           } else if (route.name === 'analysis') {
             iconName = focused ? 'bar-chart' : 'bar-chart-outline';
-          } else if (route.name === 'exam') {
-            iconName = focused ? 'school' : 'school-outline';
           } else if (route.name === 'subjects') {
             iconName = focused ? 'book' : 'book-outline';
           } else if (route.name === 'profile') {

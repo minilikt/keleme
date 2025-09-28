@@ -17,6 +17,7 @@ import { VerifyEmailForm } from '@/components/verify-email-form';
 import { Pressable, TextInput, View } from 'react-native';
 
 export default function SignUp() {
+  const router = require('expo-router').useRouter();
   const passwordInputRef = React.useRef<TextInput>(null);
   const [email, setEmail] = React.useState('');
   const [password, setPassword] = React.useState('');
@@ -50,7 +51,7 @@ export default function SignUp() {
   }
 
   if (showVerify) {
-    return <VerifyEmailForm email={email} />;
+  return <VerifyEmailForm email={email} onSuccess={() => router.push('/onboarding')} />;
   }
   // ...existing code for sign up form...
   return (

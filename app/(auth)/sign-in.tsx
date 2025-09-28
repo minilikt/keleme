@@ -27,6 +27,7 @@ export default function SignIn() {
   const [showForgot, setShowForgot] = React.useState(false);
   const [showReset, setShowReset] = React.useState(false);
   const [resetEmail, setResetEmail] = React.useState('');
+  const router = require('expo-router').useRouter();
 
   function onEmailSubmitEditing() {
     passwordInputRef.current?.focus();
@@ -41,7 +42,7 @@ export default function SignIn() {
     if (error) {
       setError(error.message);
     } else {
-      // TODO: Navigate to protected screen or set auth state
+      router.push('/'); // Redirect to home page after sign-in
     }
   }
 

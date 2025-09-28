@@ -32,4 +32,3 @@ export default function Timer({ timeLeft }: TimerProps) {
   );
 }
 
-// Tailwind styles applied via className
